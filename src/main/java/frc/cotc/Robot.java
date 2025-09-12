@@ -7,12 +7,16 @@
 
 package frc.cotc;
 
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.cotc.subsystems.*;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -23,15 +27,51 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
   private Command autonomousCommand;
 
-  private final RapidReactCommandBot robot = new RapidReactCommandBot();
-
   /**
    * This method is run when the robot is first started up and should be used for any initialization
    * code.
    */
   public Robot() {
-    // Configure default commands and condition bindings on robot startup
-    robot.configureBindings();
+    final Drive drive = new Drive();
+    final Intake intake = new Intake();
+    final Storage storage = new Storage();
+    final Shooter shooter = new Shooter();
+    final Pneumatics pneumatics = new Pneumatics();
+
+    // The driver's controller
+    CommandXboxController driverController =
+        new CommandXboxController(Constants.OIConstants.DRIVER_CONTROLLER_PORT);
+
+    // Automatically run the storage motor whenever the ball storage is not full,
+    // and turn it off whenever it fills. Uses subsystem-hosted trigger to
+    // improve readability and make inter-subsystem communication easier.
+    storage.hasCargo.whileFalse(storage.runCommand());
+
+    // Automatically disable and retract the intake whenever the ball storage is full.
+    storage.hasCargo.onTrue(intake.retractCommand());
+
+    // Control the drive with split-stick arcade controls
+    drive.setDefaultCommand(
+        drive.arcadeDriveCommand(
+            () -> -driverController.getLeftY(), () -> -driverController.getRightX()));
+
+    // Deploy the intake with the X button
+    driverController.x().onTrue(intake.intakeCommand());
+    // Retract the intake with the Y button
+    driverController.y().onTrue(intake.retractCommand());
+
+    // Fire the shooter with the A button
+    driverController
+        .a()
+        .onTrue(
+            parallel(
+                    shooter.shootCommand(Constants.ShooterConstants.SHOOTER_TARGET_RPS),
+                    storage.runCommand())
+                // Since we composed this inline we should give it a name
+                .withName("Shoot"));
+
+    // Toggle compressor with the Start button
+    driverController.start().toggleOnTrue(pneumatics.disableCompressorCommand());
 
     // Initialize data logging.
     DataLogManager.start();
@@ -54,26 +94,6 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
   }
 
-  /** This method is called once each time the robot enters Disabled mode. */
-  @Override
-  public void disabledInit() {}
-
-  @Override
-  public void disabledPeriodic() {}
-
-  @Override
-  public void autonomousInit() {
-    autonomousCommand = robot.getAutonomousCommand();
-
-    if (autonomousCommand != null) {
-      autonomousCommand.schedule();
-    }
-  }
-
-  /** This method is called periodically during autonomous. */
-  @Override
-  public void autonomousPeriodic() {}
-
   @Override
   public void teleopInit() {
     // This makes sure that the autonomous stops running when
@@ -84,18 +104,4 @@ public class Robot extends TimedRobot {
       autonomousCommand.cancel();
     }
   }
-
-  /** This method is called periodically during operator control. */
-  @Override
-  public void teleopPeriodic() {}
-
-  @Override
-  public void testInit() {
-    // Cancels all running commands at the start of test mode.
-    CommandScheduler.getInstance().cancelAll();
-  }
-
-  /** This method is called periodically during test mode. */
-  @Override
-  public void testPeriodic() {}
 }
