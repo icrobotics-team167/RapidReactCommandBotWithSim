@@ -24,17 +24,17 @@ import frc.cotc.subsystems.*;
  */
 @Logged(name = "Rapid React Command Robot")
 public class Robot extends TimedRobot {
+  public final Drive drive = new Drive();
+  public final Intake intake = new Intake();
+  public final Storage storage = new Storage();
+  public final Shooter shooter = new Shooter();
+  public final Pneumatics pneumatics = new Pneumatics();
+
   /**
    * This method is run when the robot is first started up and should be used for any initialization
    * code.
    */
   public Robot() {
-    final Drive drive = new Drive();
-    final Intake intake = new Intake();
-    final Storage storage = new Storage();
-    final Shooter shooter = new Shooter();
-    final Pneumatics pneumatics = new Pneumatics();
-
     // The driver's controller
     CommandXboxController driverController =
         new CommandXboxController(Constants.OIConstants.DRIVER_CONTROLLER_PORT);
@@ -72,6 +72,7 @@ public class Robot extends TimedRobot {
 
     // Initialize data logging.
     DataLogManager.start();
+    Epilogue.bind(this);
   }
 
   /**
@@ -88,6 +89,5 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    Epilogue.update(this);
   }
 }
