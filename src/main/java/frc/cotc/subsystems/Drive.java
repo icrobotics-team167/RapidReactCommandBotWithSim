@@ -11,13 +11,22 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.cotc.Constants.DriveConstants;
@@ -44,6 +53,8 @@ public class Drive extends SubsystemBase {
           DriveConstants.LEFT_ENCODER_PORTS[1],
           DriveConstants.LEFT_ENCODER_REVERSED);
 
+  @NotLogged private final EncoderSim leftEncoderSim = new EncoderSim(leftEncoder);
+
   // The right-side drive encoder
   private final Encoder rightEncoder =
       new Encoder(
@@ -51,7 +62,10 @@ public class Drive extends SubsystemBase {
           DriveConstants.RIGHT_ENCODER_PORTS[1],
           DriveConstants.RIGHT_ENCODER_REVERSED);
 
+  @NotLogged private final EncoderSim rightEncoderSim = new EncoderSim(rightEncoder);
+
   private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+  @NotLogged private final ADXRS450_GyroSim gyroSim = new ADXRS450_GyroSim(gyro);
   private final ProfiledPIDController controller =
       new ProfiledPIDController(
           DriveConstants.TURN_P,
@@ -65,6 +79,9 @@ public class Drive extends SubsystemBase {
           DriveConstants.ksVolts,
           DriveConstants.kvVoltSecondsPerDegree,
           DriveConstants.kaVoltSecondsSquaredPerDegree);
+
+  private final DifferentialDriveOdometry odometry =
+      new DifferentialDriveOdometry(new Rotation2d(), 0, 0, new Pose2d());
 
   /** Creates a new Drive subsystem. */
   public Drive() {
@@ -89,6 +106,34 @@ public class Drive extends SubsystemBase {
     // setpoint before it is considered as having reached the reference
     controller.setTolerance(
         DriveConstants.TURN_TOLERANCE_DEG, DriveConstants.TURN_RATE_TOLERANCE_DEG_PER_S);
+  }
+
+  @NotLogged
+  private final DifferentialDrivetrainSim sim =
+      new DifferentialDrivetrainSim(
+          DCMotor.getNEO(4), 6, 10, Units.lbsToKilograms(150), Units.inchesToMeters(3), 1, null);
+
+  @Override
+  public void periodic() {
+    odometry.update(
+        gyro.getRotation2d(),
+        new DifferentialDriveWheelPositions(leftEncoder.getDistance(), rightEncoder.getDistance()));
+  }
+
+  @Logged
+  public Pose2d getPose() {
+    return odometry.getPoseMeters();
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    sim.setInputs(leftLeader.get() * 12, rightLeader.get() * 12);
+    sim.update(.02);
+    leftEncoderSim.setCount(
+        (int) (sim.getLeftPositionMeters() / DriveConstants.ENCODER_DISTANCE_PER_PULSE));
+    rightEncoderSim.setCount(
+        (int) (sim.getRightPositionMeters() / DriveConstants.ENCODER_DISTANCE_PER_PULSE));
+    gyroSim.setAngle(-sim.getHeading().getDegrees());
   }
 
   /**

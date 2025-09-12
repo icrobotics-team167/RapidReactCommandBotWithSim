@@ -13,7 +13,6 @@ import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.cotc.subsystems.*;
@@ -25,8 +24,6 @@ import frc.cotc.subsystems.*;
  */
 @Logged(name = "Rapid React Command Robot")
 public class Robot extends TimedRobot {
-  private Command autonomousCommand;
-
   /**
    * This method is run when the robot is first started up and should be used for any initialization
    * code.
@@ -75,7 +72,6 @@ public class Robot extends TimedRobot {
 
     // Initialize data logging.
     DataLogManager.start();
-    Epilogue.bind(this);
   }
 
   /**
@@ -92,16 +88,6 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-  }
-
-  @Override
-  public void teleopInit() {
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
-    if (autonomousCommand != null) {
-      autonomousCommand.cancel();
-    }
+    Epilogue.update(this);
   }
 }

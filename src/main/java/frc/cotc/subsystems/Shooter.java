@@ -11,10 +11,15 @@ import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.cotc.Constants.ShooterConstants;
@@ -33,6 +38,13 @@ public class Shooter extends SubsystemBase {
           ShooterConstants.S_VOLTS, ShooterConstants.V_VOLT_SECONDS_PER_ROTATION);
   private final PIDController shooterFeedback = new PIDController(ShooterConstants.P, 0.0, 0.0);
 
+  @NotLogged
+  private final DCMotorSim shooterSim =
+      new DCMotorSim(
+          LinearSystemId.createDCMotorSystem(DCMotor.getNEO(2), 1, 1), DCMotor.getNEO(2));
+
+  @NotLogged private final EncoderSim encoderSim = new EncoderSim(shooterEncoder);
+
   /** The shooter subsystem for the robot. */
   public Shooter() {
     shooterFeedback.setTolerance(ShooterConstants.SHOOTER_TOLERANCE_RPS);
@@ -47,6 +59,14 @@ public class Shooter extends SubsystemBase {
                 })
             .andThen(run(() -> {}))
             .withName("Idle"));
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    shooterSim.setInputVoltage(shooterMotor.get() * 12);
+    shooterSim.update(.02);
+    encoderSim.setCount(
+        (int) (shooterSim.getAngularPositionRotations() * ShooterConstants.ENCODER_CPR));
   }
 
   /**
