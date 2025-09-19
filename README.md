@@ -9,7 +9,9 @@ Treys Notes:
 Followed this:
 Installed software given instructions from Caulder
 
-
+Tada notes:
+Nuked RobotContainer.java and moved it to the Robot.java
+Why? Separating the command based code from the non command based code is no longer a reccomended practice
 
 
 Followed this:
@@ -30,6 +32,8 @@ Ex: You need to specify the physical properties and performance of the robot. Th
 Probably good to include what a good robot code file structure looks like: will make implementing this example easier
 
 
-
+!!!!!!!!!!To start simulations
+search bar at top -> >Simulate Robot Code hit ok
+go to the 3D tab, drag robot position over to the simulate field at the bottom.
 
 
