@@ -34,6 +34,12 @@ Probably good to include what a good robot code file structure looks like: will 
 
 !!!!!!!!!!To start simulations
 search bar at top -> >Simulate Robot Code hit ok
+then in AdvantageScope -> file -> Connect to Simulation
 go to the 3D tab, drag robot position over to the simulate field at the bottom.
+
+
+Once simulations are running
+- add a controller
+        - keyboard, xbox, etc
 
 
