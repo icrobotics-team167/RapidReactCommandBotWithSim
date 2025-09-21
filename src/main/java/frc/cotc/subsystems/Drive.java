@@ -7,8 +7,10 @@
 
 package frc.cotc.subsystems;
 
+//We use these to include the logging library for AdvantageScope
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -32,6 +34,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.cotc.Constants.DriveConstants;
 import java.util.function.DoubleSupplier;
 
+
+/**
+ * The Drive subsystem controls the robot's drivetrain. It contains methods for driving with arcade
+ * controls, driving a specified distance, and turning to a specified angle.
+ * 
+ * We added the @Logged annotation to the class.
+ * This tells the Epilogue logging library to automatically log all public variables and methods in this class.
+ */
 @Logged
 public class Drive extends SubsystemBase {
   // The motors on the left side of the drive.
@@ -43,27 +53,30 @@ public class Drive extends SubsystemBase {
   private final PWMSparkMax rightFollower = new PWMSparkMax(DriveConstants.RIGHT_MOTOR_2_PORT);
 
   // The robot's drive
-  @NotLogged // Would duplicate motor data, there's no point sending it twice
+  @NotLogged // Would duplicate motor data above, there's no point sending it twice
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader::set, rightLeader::set);
 
-  // The left-side drive encoder
+  // The left-side drive encoder !! Remember, this is logged because the class is annotated with @Logged
   private final Encoder leftEncoder =
       new Encoder(
           DriveConstants.LEFT_ENCODER_PORTS[0],
           DriveConstants.LEFT_ENCODER_PORTS[1],
           DriveConstants.LEFT_ENCODER_REVERSED);
 
-  @NotLogged private final EncoderSim leftEncoderSim = new EncoderSim(leftEncoder);
+  @NotLogged // Dont want to duplicate data above, the encoder is already logged
+  private final EncoderSim leftEncoderSim = new EncoderSim(leftEncoder);
 
-  // The right-side drive encoder
+  // The right-side drive encoder !! Remember, this is logged because the class is annotated with @Logged
   private final Encoder rightEncoder =
       new Encoder(
           DriveConstants.RIGHT_ENCODER_PORTS[0],
           DriveConstants.RIGHT_ENCODER_PORTS[1],
           DriveConstants.RIGHT_ENCODER_REVERSED);
 
-  @NotLogged private final EncoderSim rightEncoderSim = new EncoderSim(rightEncoder);
+  @NotLogged // Dont want to duplicate data above, the encoder is already logged
+  private final EncoderSim rightEncoderSim = new EncoderSim(rightEncoder);
 
+  //!! Remember, this is logged because the class is annotated with @Logged
   private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
   @NotLogged private final ADXRS450_GyroSim gyroSim = new ADXRS450_GyroSim(gyro);
   private final ProfiledPIDController controller =

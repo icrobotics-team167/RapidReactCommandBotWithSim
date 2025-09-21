@@ -5,22 +5,29 @@
 // license that can be found in the LICENSE file at
 // the root directory of this project.
 
-package frc.cotc;
+package frc.cotc; //package declaration specifies the package name for this class, which is frc.cotc.
+// It helps organize classes and avoid naming conflicts.
 
-import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.parallel; 
 
+//We use these to include the logging library for AdvantageScope
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+
+//otherStuff
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.cotc.subsystems.*;
+import frc.cotc.subsystems.*; //import everyting in subsystems
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
  * the TimedRobot documentation. If you change the name of this class or the package after creating
  * this project, you must also update the Main.java file in the project.
+ * 
+ * Note: Here we added the @Logged annotation to the class.
+ * This tells the Epilogue logging library to automatically log all public variables and methods in this Robot class.
  */
 @Logged(name = "Rapid React Command Robot")
 public class Robot extends TimedRobot {
@@ -47,7 +54,7 @@ public class Robot extends TimedRobot {
     // Automatically disable and retract the intake whenever the ball storage is full.
     storage.hasCargo.onTrue(intake.retractCommand());
 
-    // Control the drive with split-stick arcade controls
+    // Control the drive with split-stick arcade controls on an Xbox controller
     drive.setDefaultCommand(
         drive.arcadeDriveCommand(
             () -> -driverController.getLeftY(), () -> -driverController.getRightX()));
@@ -57,7 +64,7 @@ public class Robot extends TimedRobot {
     // Retract the intake with the Y button
     driverController.y().onTrue(intake.retractCommand());
 
-    // Fire the shooter with the A button
+    // Fire the shooter with the A button on an Xbox controller
     driverController
         .a()
         .onTrue(
@@ -72,6 +79,8 @@ public class Robot extends TimedRobot {
 
     // Initialize data logging.
     DataLogManager.start();
+    //Connect the Epilogue logger to the current Robot Instance
+    //This is saved in a .wpilog file on the robot, and can be opened in AdvantageScope
     Epilogue.bind(this);
   }
 

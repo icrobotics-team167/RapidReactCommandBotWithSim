@@ -7,8 +7,10 @@
 
 package frc.cotc.subsystems;
 
+// We use these to include the logging library for AdvantageScope
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,6 +18,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.cotc.Constants.StorageConstants;
 
+/**
+ * The storage subsystem for the robot, which includes a motor to move balls into the shooter and a
+ * sensor to detect whether a ball is present. 
+ * 
+ * We added the @Logged annotation to the class. 
+ * This tells the Epilogue logging library to automatically log all public variables and methods in this class.
+ */
 @Logged
 public class Storage extends SubsystemBase {
   private final PWMSparkMax motor = new PWMSparkMax(StorageConstants.MOTOR_PORT);
