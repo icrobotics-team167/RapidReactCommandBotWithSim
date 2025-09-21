@@ -132,7 +132,7 @@ public class Drive extends SubsystemBase {
         gyro.getRotation2d(),
         new DifferentialDriveWheelPositions(leftEncoder.getDistance(), rightEncoder.getDistance()));
   }
-  
+
   public Pose2d getPose() {
     return odometry.getPoseMeters();
   }
