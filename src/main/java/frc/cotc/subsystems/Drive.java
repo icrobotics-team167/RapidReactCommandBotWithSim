@@ -26,9 +26,11 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+//we also added this stuff to simulate sensors and drivetrain
 import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.cotc.Constants.DriveConstants;
@@ -44,163 +46,183 @@ import java.util.function.DoubleSupplier;
  */
 @Logged
 public class Drive extends SubsystemBase {
-  // The motors on the left side of the drive.
-  private final PWMSparkMax leftLeader = new PWMSparkMax(DriveConstants.LEFT_MOTOR_1_PORT);
-  private final PWMSparkMax leftFollower = new PWMSparkMax(DriveConstants.LEFT_MOTOR_2_PORT);
+    // The motors on the left side of the drive.
+    private final PWMSparkMax leftLeader = new PWMSparkMax(DriveConstants.LEFT_MOTOR_1_PORT);
+    private final PWMSparkMax leftFollower = new PWMSparkMax(DriveConstants.LEFT_MOTOR_2_PORT);
 
-  // The motors on the right side of the drive.
-  private final PWMSparkMax rightLeader = new PWMSparkMax(DriveConstants.RIGHT_MOTOR_1_PORT);
-  private final PWMSparkMax rightFollower = new PWMSparkMax(DriveConstants.RIGHT_MOTOR_2_PORT);
+    // The motors on the right side of the drive.
+    private final PWMSparkMax rightLeader = new PWMSparkMax(DriveConstants.RIGHT_MOTOR_1_PORT);
+    private final PWMSparkMax rightFollower = new PWMSparkMax(DriveConstants.RIGHT_MOTOR_2_PORT);
 
-  // The robot's drive
-  @NotLogged // Would duplicate motor data above, there's no point sending it twice
-  private final DifferentialDrive drive = new DifferentialDrive(leftLeader::set, rightLeader::set);
+    // The robot's drive
+    @NotLogged // Would duplicate motor data above, there's no point sending it twice
+    private final DifferentialDrive drive = new DifferentialDrive(leftLeader::set, rightLeader::set);
 
-  // The left-side drive encoder !! Remember, this is logged because the class is annotated with @Logged
-  private final Encoder leftEncoder =
-      new Encoder(
-          DriveConstants.LEFT_ENCODER_PORTS[0],
-          DriveConstants.LEFT_ENCODER_PORTS[1],
-          DriveConstants.LEFT_ENCODER_REVERSED);
+    // The left-side drive encoder !! Remember, this is logged because the class is annotated with @Logged
+    private final Encoder leftEncoder =
+        new Encoder(
+            DriveConstants.LEFT_ENCODER_PORTS[0],
+            DriveConstants.LEFT_ENCODER_PORTS[1],
+            DriveConstants.LEFT_ENCODER_REVERSED);
 
-  @NotLogged // Dont want to duplicate data above, the encoder is already logged
-  private final EncoderSim leftEncoderSim = new EncoderSim(leftEncoder);
+    @NotLogged // Dont want to duplicate data above, the encoder is already logged
+    private final EncoderSim leftEncoderSim = new EncoderSim(leftEncoder);
 
-  // The right-side drive encoder !! Remember, this is logged because the class is annotated with @Logged
-  private final Encoder rightEncoder =
-      new Encoder(
-          DriveConstants.RIGHT_ENCODER_PORTS[0],
-          DriveConstants.RIGHT_ENCODER_PORTS[1],
-          DriveConstants.RIGHT_ENCODER_REVERSED);
+    // The right-side drive encoder !! Remember, this is logged because the class is annotated with @Logged
+    private final Encoder rightEncoder =
+        new Encoder(
+            DriveConstants.RIGHT_ENCODER_PORTS[0],
+            DriveConstants.RIGHT_ENCODER_PORTS[1],
+            DriveConstants.RIGHT_ENCODER_REVERSED);
 
-  @NotLogged // Dont want to duplicate data above, the encoder is already logged
-  private final EncoderSim rightEncoderSim = new EncoderSim(rightEncoder);
+    @NotLogged // Dont want to duplicate data above, the encoder is already logged
+    private final EncoderSim rightEncoderSim = new EncoderSim(rightEncoder);
 
-  //!! Remember, this is logged because the class is annotated with @Logged
-  private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
-  @NotLogged private final ADXRS450_GyroSim gyroSim = new ADXRS450_GyroSim(gyro);
-  private final ProfiledPIDController controller =
-      new ProfiledPIDController(
-          DriveConstants.TURN_P,
-          DriveConstants.TURN_I,
-          DriveConstants.TURN_D,
-          new TrapezoidProfile.Constraints(
-              DriveConstants.MAX_TURN_RATE_DEG_PER_S,
-              DriveConstants.MAX_TURN_ACCELERATION_DEG_PER_S_SQUARED));
-  private final SimpleMotorFeedforward feedforward =
-      new SimpleMotorFeedforward(
-          DriveConstants.ksVolts,
-          DriveConstants.kvVoltSecondsPerDegree,
-          DriveConstants.kaVoltSecondsSquaredPerDegree);
+    //!! Remember, this is logged because the class is annotated with @Logged
+    private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+    @NotLogged //we dont want to log the gyro simulation data (dont want to duplicate data)
+    private final ADXRS450_GyroSim gyroSim = new ADXRS450_GyroSim(gyro);
 
-  private final DifferentialDriveOdometry odometry =
-      new DifferentialDriveOdometry(new Rotation2d(), 0, 0, new Pose2d());
+    // A PID controller to turn the robot to a specified angle.
+    private final ProfiledPIDController controller =
+        new ProfiledPIDController(
+            DriveConstants.TURN_P,
+            DriveConstants.TURN_I,
+            DriveConstants.TURN_D,
+            new TrapezoidProfile.Constraints(
+                DriveConstants.MAX_TURN_RATE_DEG_PER_S,
+                DriveConstants.MAX_TURN_ACCELERATION_DEG_PER_S_SQUARED));
+    
+    // Feedforward to add to the turning PID controller            
+    private final SimpleMotorFeedforward feedforward =
+        new SimpleMotorFeedforward(
+            DriveConstants.ksVolts,
+            DriveConstants.kvVoltSecondsPerDegree,
+            DriveConstants.kaVoltSecondsSquaredPerDegree);
 
-  /** Creates a new Drive subsystem. */
-  public Drive() {
-    SendableRegistry.addChild(drive, leftLeader);
-    SendableRegistry.addChild(drive, rightLeader);
+    // The robot's odometry, which tracks its position on the field.
+    private final DifferentialDriveOdometry odometry =
+        new DifferentialDriveOdometry(new Rotation2d(), 0, 0, new Pose2d());
 
-    leftLeader.addFollower(leftFollower);
-    rightLeader.addFollower(rightFollower);
+    /** Creates a new Drive subsystem. */
+    public Drive() {
+        SendableRegistry.addChild(drive, leftLeader);
+        SendableRegistry.addChild(drive, rightLeader);
 
-    // We need to invert one side of the drivetrain so that positive voltages
-    // result in both sides moving forward. Depending on how your robot's
-    // gearbox is constructed, you might have to invert the left side instead.
-    rightLeader.setInverted(true);
+        leftLeader.addFollower(leftFollower);
+        rightLeader.addFollower(rightFollower);
 
-    // Sets the distance per pulse for the encoders
-    leftEncoder.setDistancePerPulse(DriveConstants.ENCODER_DISTANCE_PER_PULSE);
-    rightEncoder.setDistancePerPulse(DriveConstants.ENCODER_DISTANCE_PER_PULSE);
+        // We need to invert one side of the drivetrain so that positive voltages
+        // result in both sides moving forward. Depending on how your robot's
+        // gearbox is constructed, you might have to invert the left side instead.
+        rightLeader.setInverted(true);
 
-    // Set the controller to be continuous (because it is an angle controller)
-    controller.enableContinuousInput(-180, 180);
-    // Set the controller tolerance - the delta tolerance ensures the robot is stationary at the
-    // setpoint before it is considered as having reached the reference
-    controller.setTolerance(
-        DriveConstants.TURN_TOLERANCE_DEG, DriveConstants.TURN_RATE_TOLERANCE_DEG_PER_S);
-  }
+        // Sets the distance per pulse for the encoders
+        leftEncoder.setDistancePerPulse(DriveConstants.ENCODER_DISTANCE_PER_PULSE);
+        rightEncoder.setDistancePerPulse(DriveConstants.ENCODER_DISTANCE_PER_PULSE);
 
-  @NotLogged
-  private final DifferentialDrivetrainSim sim =
-      new DifferentialDrivetrainSim(
-          DCMotor.getNEO(4), 6, 10, Units.lbsToKilograms(150), Units.inchesToMeters(3), 1, null);
+        // Set the controller to be continuous (because it is an angle controller)
+        controller.enableContinuousInput(-180, 180);
+        // Set the controller tolerance - the delta tolerance ensures the robot is stationary at the
+        // setpoint before it is considered as having reached the reference
+        controller.setTolerance(
+            DriveConstants.TURN_TOLERANCE_DEG, DriveConstants.TURN_RATE_TOLERANCE_DEG_PER_S);
+    }
+    /*
+     * Simulate the drivetrain
+     * We annotate this with @NotLogged so that the simulation data is not logged to AdvantageScope
+     */
+    @NotLogged
+    private final DifferentialDrivetrainSim sim =
+        new DifferentialDrivetrainSim(
+            DCMotor.getNEO(4), 6, 10, Units.lbsToKilograms(150), Units.inchesToMeters(3), 1, null);
 
-  @Override
-  public void periodic() {
-    odometry.update(
-        gyro.getRotation2d(),
-        new DifferentialDriveWheelPositions(leftEncoder.getDistance(), rightEncoder.getDistance()));
-  }
+    /*
+     * Updates the robots odometry.
+     * This method is called once per scheduler run (typically every 20 ms).
+     */
+    @Override
+    public void periodic() {
+        odometry.update(
+            gyro.getRotation2d(),
+            new DifferentialDriveWheelPositions(leftEncoder.getDistance(), rightEncoder.getDistance()));
+    }
+    /*
+     * Returns the currently-estimated pose of the robot.
+     * We previously annotated this with @Logged to help with debugging
+     * @return The pose.
+     */
+    public Pose2d getPose() {
+        return odometry.getPoseMeters();
+    }
 
-  @Logged
-  public Pose2d getPose() {
-    return odometry.getPoseMeters();
-  }
+    /*
+     * This method is called periodically during simulation.
+     * We use it to update our simulation of the drivetrain, encoders, and gyro.
+     */
+    @Override
+    public void simulationPeriodic() {
+        sim.setInputs(leftLeader.get() * 12, rightLeader.get() * 12);
+        sim.update(.02);
+        leftEncoderSim.setCount(
+            (int) (sim.getLeftPositionMeters() / DriveConstants.ENCODER_DISTANCE_PER_PULSE));
+        rightEncoderSim.setCount(
+            (int) (sim.getRightPositionMeters() / DriveConstants.ENCODER_DISTANCE_PER_PULSE));
+        gyroSim.setAngle(-sim.getHeading().getDegrees());
+    }
 
-  @Override
-  public void simulationPeriodic() {
-    sim.setInputs(leftLeader.get() * 12, rightLeader.get() * 12);
-    sim.update(.02);
-    leftEncoderSim.setCount(
-        (int) (sim.getLeftPositionMeters() / DriveConstants.ENCODER_DISTANCE_PER_PULSE));
-    rightEncoderSim.setCount(
-        (int) (sim.getRightPositionMeters() / DriveConstants.ENCODER_DISTANCE_PER_PULSE));
-    gyroSim.setAngle(-sim.getHeading().getDegrees());
-  }
+    /**
+    * Returns a command that drives the robot with arcade controls.
+    *
+    * @param fwd the commanded forward movement
+    * @param rot the commanded rotation
+    */
+    public Command arcadeDriveCommand(DoubleSupplier fwd, DoubleSupplier rot) {
+        // A split-stick arcade command, with forward/backward controlled by the left
+        // hand, and turning controlled by the right.
+        return run(() -> drive.arcadeDrive(fwd.getAsDouble(), rot.getAsDouble()))
+            .withName("arcadeDrive");
+    }
 
-  /**
-   * Returns a command that drives the robot with arcade controls.
-   *
-   * @param fwd the commanded forward movement
-   * @param rot the commanded rotation
-   */
-  public Command arcadeDriveCommand(DoubleSupplier fwd, DoubleSupplier rot) {
-    // A split-stick arcade command, with forward/backward controlled by the left
-    // hand, and turning controlled by the right.
-    return run(() -> drive.arcadeDrive(fwd.getAsDouble(), rot.getAsDouble()))
-        .withName("arcadeDrive");
-  }
+    /**
+    * Returns a command that drives the robot forward a specified distance at a specified speed.
+    *
+    * @param distanceMeters The distance to drive forward in meters
+    * @param speed The fraction of max speed at which to drive
+    */
+    public Command driveDistanceCommand(double distanceMeters, double speed) {
+        return runOnce(
+              () -> {
+                // Reset encoders at the start of the command
+                leftEncoder.reset();
+                rightEncoder.reset();
+                })
+            // Drive forward at specified speed
+            .andThen(run(() -> drive.arcadeDrive(speed, 0)))
+            // End command when we've traveled the specified distance
+            .until(
+                () -> Math.max(leftEncoder.getDistance(), rightEncoder.getDistance()) >= distanceMeters)
+            // Stop the drive when the command ends
+            .finallyDo(interrupted -> drive.stopMotor());
+    }
 
-  /**
-   * Returns a command that drives the robot forward a specified distance at a specified speed.
-   *
-   * @param distanceMeters The distance to drive forward in meters
-   * @param speed The fraction of max speed at which to drive
-   */
-  public Command driveDistanceCommand(double distanceMeters, double speed) {
-    return runOnce(
-            () -> {
-              // Reset encoders at the start of the command
-              leftEncoder.reset();
-              rightEncoder.reset();
-            })
-        // Drive forward at specified speed
-        .andThen(run(() -> drive.arcadeDrive(speed, 0)))
-        // End command when we've traveled the specified distance
-        .until(
-            () -> Math.max(leftEncoder.getDistance(), rightEncoder.getDistance()) >= distanceMeters)
-        // Stop the drive when the command ends
-        .finallyDo(interrupted -> drive.stopMotor());
-  }
-
-  /**
-   * Returns a command that turns to robot to the specified angle using a motion profile and PID
-   * controller.
-   *
-   * @param angleDeg The angle to turn to
-   */
-  public Command turnToAngleCommand(double angleDeg) {
-    return startRun(
-            () -> controller.reset(gyro.getRotation2d().getDegrees()),
-            () ->
-                drive.arcadeDrive(
-                    0,
-                    controller.calculate(gyro.getRotation2d().getDegrees(), angleDeg)
-                        // Divide feedforward voltage by battery voltage to normalize it to [-1, 1]
-                        + feedforward.calculate(controller.getSetpoint().velocity)
-                            / RobotController.getBatteryVoltage()))
-        .until(controller::atGoal)
-        .finallyDo(() -> drive.arcadeDrive(0, 0));
-  }
+    /**
+     * Returns a command that turns to robot to the specified angle using a motion profile and PID
+     * controller.
+     *
+     * @param angleDeg The angle to turn to
+     */
+    public Command turnToAngleCommand(double angleDeg) {
+        return startRun(
+                () -> controller.reset(gyro.getRotation2d().getDegrees()),
+                () ->
+                    drive.arcadeDrive(
+                        0,
+                        controller.calculate(gyro.getRotation2d().getDegrees(), angleDeg)
+                            // Divide feedforward voltage by battery voltage to normalize it to [-1, 1]
+                            + feedforward.calculate(controller.getSetpoint().velocity)
+                                / RobotController.getBatteryVoltage()))
+            .until(controller::atGoal)
+            .finallyDo(() -> drive.arcadeDrive(0, 0));
+    }
 }
