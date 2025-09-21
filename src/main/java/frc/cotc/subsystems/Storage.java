@@ -20,14 +20,15 @@ import frc.cotc.Constants.StorageConstants;
 
 /**
  * The storage subsystem for the robot, which includes a motor to move balls into the shooter and a
- * sensor to detect whether a ball is present. 
- * 
- * We added the @Logged annotation to the class. 
- * This tells the Epilogue logging library to automatically log all public variables and methods in this class.
+ * sensor to detect whether a ball is present.
+ *
+ * We added the @Logged annotation to the class. This tells the Epilogue logging library to
+ * automatically log all public variables and methods in this class.
  */
 @Logged
 public class Storage extends SubsystemBase {
   private final PWMSparkMax motor = new PWMSparkMax(StorageConstants.MOTOR_PORT);
+  
   @NotLogged // We'll log a more meaningful boolean instead
   private final DigitalInput ballSensor = new DigitalInput(StorageConstants.BALL_SENSOR_PORT);
 

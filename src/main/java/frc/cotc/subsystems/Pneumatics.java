@@ -9,7 +9,6 @@ package frc.cotc.subsystems;
 
 // We use these to include the logging library for AdvantageScope
 import edu.wpi.first.epilogue.Logged;
-
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -18,9 +17,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
  * The Pneumatics subsystem controls the robot's pneumatic system, including the compressor and
- * pressure sensor.
- * We added the @Logged annotation to the class.
- * This tells the Epilogue logging library to automatically log all public variables and methods in this class.
+ * pressure sensor. We added the @Logged annotation to the class. This tells the Epilogue logging
+ * library to automatically log all public variables and methods in this class.
  */
 @Logged
 public class Pneumatics extends SubsystemBase {

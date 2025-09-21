@@ -8,7 +8,7 @@
 package frc.cotc.subsystems;
 
 import static frc.cotc.Constants.IntakeConstants;
-// We use these to include the logging library for AdvantageScope
+//We use these to include the logging library for AdvantageScope
 import edu.wpi.first.epilogue.Logged;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -20,9 +20,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 /**
  * The Intake subsystem controls the robot's intake mechanism, which is used to pick up and hold
  * game pieces. It contains methods for deploying and retracting the intake, as well as running the
- * intake motor.
- * We added the @Logged annotation to the class.
- * This tells the Epilogue logging library to automatically log all public variables and methods in this class.
+ * intake motor. We added the @Logged annotation to the class. This tells the Epilogue logging
+ * library to automatically log all public variables and methods in this class.
  */
 @Logged
 public class Intake extends SubsystemBase {
