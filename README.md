@@ -46,3 +46,6 @@ Once simulations are running
 
 Steps for MapleSim
 https://shenzhen-robotics-alliance.github.io/maple-sim/installing-maple-sim/
+
+Figuring out where to add the code to enable MapleSIm usage has been troubling so far
+used this version: https://github.com/Shenzhen-Robotics-Alliance/maple-sim/releases/download/v0.3.14/maple-sim-0.3.14.json

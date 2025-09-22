@@ -6,15 +6,11 @@
 // the root directory of this project.
 
 package frc.cotc; // package declaration specifies the package name for this class, which is
-
-// frc.cotc.
-
-// It helps organize classes and avoid naming conflicts.
-
-import static edu.wpi.first.wpilibj2.command.Commands.parallel;
-
+import static edu.wpi.first.wpilibj2.command.Commands.parallel; //This is used to group multiple commands to run in parallel. 
+// We use these to include the logging library for AdvantageScope
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
