@@ -41,3 +41,8 @@ go to the 3D tab, drag robot position over to the simulate field at the bottom.
 Once simulations are running
 - add a controller
         - keyboard, xbox, etc
+
+
+
+Steps for MapleSim
+https://shenzhen-robotics-alliance.github.io/maple-sim/installing-maple-sim/
