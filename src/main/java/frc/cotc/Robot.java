@@ -6,16 +6,20 @@
 // the root directory of this project.
 
 package frc.cotc; // package declaration specifies the package name for this class, which is
-import static edu.wpi.first.wpilibj2.command.Commands.parallel; //This is used to group multiple commands to run in parallel. 
-// We use these to include the logging library for AdvantageScope
+
+import static edu.wpi.first.wpilibj2.command.Commands.*;
+
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
-
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.cotc.subsystems.*;
+import java.util.Set;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -32,6 +36,8 @@ public class Robot extends TimedRobot {
   public final Storage storage = new Storage();
   public final Shooter shooter = new Shooter();
   public final Pneumatics pneumatics = new Pneumatics();
+
+  private final SendableChooser<Command> autoChooser;
 
   /**
    * This method is run when the robot is first started up and should be used for any initialization
@@ -78,6 +84,12 @@ public class Robot extends TimedRobot {
     // Connect the Epilogue logger to the current Robot Instance
     // This is saved in a .wpilog file on the robot, and can be opened in AdvantageScope
     Epilogue.bind(this);
+
+    autoChooser = new SendableChooser<>();
+    autoChooser.addOption("None", none());
+    autoChooser.addOption("DriveForward", drive.driveDistanceCommand(4, 1));
+
+    RobotModeTriggers.autonomous().whileTrue(deferredProxy(autoChooser::getSelected));
   }
 
   /**
