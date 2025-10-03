@@ -14,6 +14,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -88,6 +89,7 @@ public class Robot extends TimedRobot {
     autoChooser = new SendableChooser<>();
     autoChooser.addOption("None", none());
     autoChooser.addOption("DriveForward", drive.driveDistanceCommand(4, 1));
+    SmartDashboard.putData(autoChooser);
 
     RobotModeTriggers.autonomous().whileTrue(deferredProxy(autoChooser::getSelected));
   }
